@@ -2,6 +2,7 @@
 // Structured to closely match a future real backend schema
 
 import type { EvidenceMetadata } from './evidenceTypes';
+import type { GeminiUniversityRecommendation } from './aiReportTypes';
 
 // ─── Auth & Roles ────────────────────────────────────────────────────────────
 
@@ -87,6 +88,7 @@ export type ProblemStatus =
   | 'matching'
   | 'allocated'
   | 'in_progress'
+  | 'In Progress'
   | 'testing'
   | 'pilot'
   | 'deployed'
@@ -98,7 +100,13 @@ export type ProblemStatus =
   | 'Ready for Matching'
   | 'University Assigned'
   | 'University Accepted'
-  | 'University Declined';
+  | 'University Declined'
+  | 'Faculty Assigned'
+  | 'Faculty Accepted'
+  | 'Faculty Declined'
+  | 'Team Accepted'
+  | 'Team Declined'
+  | 'Industry Collaboration';
 
 export type ProblemVerificationStatus = 'Pending' | 'Verified' | 'Rejected';
 export type ProblemAllocationStatus = 'Not Allocated' | 'Allocated' | 'Accepted' | 'Declined';
@@ -273,6 +281,7 @@ export interface UniversityMatch {
   aiRecommendation: boolean; // true = AI recommended this one
   rank: number;              // 1 = top match
   explanation?: string;      // Generated explanation based on factor scores
+  geminiRecommendation?: GeminiUniversityRecommendation; // Gemini 3.5 Flash-Lite institutional recommendation
 
   // AI disclaimer applies here too
 }

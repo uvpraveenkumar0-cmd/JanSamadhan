@@ -2083,8 +2083,8 @@ export const db = {
         profileId: 'prof-pending-univ',
         institutionId: 'univ-kolhan',
         organizationName: 'Kolhan University Chaibasa',
-        status: 'pending_verification',
-        isVerified: false,
+        status: 'active',
+        isVerified: true,
         passwordHash: DEFAULT_PWD_HASH,
         salt: DEFAULT_SALT,
         failedLoginAttempts: 0,
@@ -3566,6 +3566,23 @@ export const db = {
       }
       safeSetItem(STORAGE_KEYS.INDUSTRY_COMMITMENTS, commitments);
 
+      // Update problem record with industry collaboration
+      const targetProb = this.getProblemById(problemId);
+      if (targetProb) {
+        this.updateProblem(problemId, {
+          status: 'Industry Collaboration',
+        });
+        if (targetProb.citizenId) {
+          this.createNotification({
+            userId: targetProb.citizenId,
+            type: 'success',
+            title: 'Industry Co-Innovation Partner Joined!',
+            message: `${payload.industryPartnerName} joined your problem "${targetProb.title}" as Industry Partner, committing ₹${payload.fundingCommitment?.toLocaleString() || '3,50,000'} in co-innovation funding and technical mentorship.`,
+            link: `/citizen/track?problemId=${problemId}`,
+          });
+        }
+      }
+
       // Seed default workspace tasks if not present
       this.ensureDefaultWorkspaceTasks(problemId, collab.industryPartner);
 
@@ -4072,12 +4089,13 @@ export const db = {
 
       // Notify Citizen
       this.createNotification({
-        userId: 'citizen',
+        userId: (pIdx >= 0 && problems[pIdx].citizenId) ? problems[pIdx].citizenId : 'citizen',
         role: 'citizen',
         problemId,
         type: 'success',
-        title: 'Your Grievance Has Been Validated & Approved for Scale!',
-        message: `Grievance ${problemId} successfully solved through University research, student prototype, industry co-pilot, and field pilot trials. Approved for public deployment by Government of Jharkhand.`,
+        title: 'Your Problem Has Been Resolved & Approved for Scale!',
+        message: `Problem ${problemId} successfully solved through University research, student prototype, industry co-pilot, and field pilot trials. Approved for public deployment by Government of Jharkhand.`,
+        link: `/citizen/track?problemId=${problemId}`,
       });
 
       // Notify Faculty, University, Industry

@@ -32,6 +32,9 @@ import {
   CheckCheck,
   FileCheck,
   ExternalLink,
+  Cpu,
+  Lightbulb,
+  Wrench,
 } from 'lucide-react';
 import type { AIReport } from '../../types/aiReportTypes';
 
@@ -83,11 +86,15 @@ export const CitizenAIExperience: React.FC<CitizenAIExperienceProps> = ({
     duplicateDetection,
     aiExplanation,
     problemId,
+    geminiAnalysis,
+    modelUsed,
+    processingStatus,
   } = report;
 
   // Interactive UI states
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [showFullSummary, setShowFullSummary] = useState(false);
+  const [showGeminiInsights, setShowGeminiInsights] = useState(true);
   const [selectedProcessStep, setSelectedProcessStep] = useState<number>(0);
   const [showConfidenceWhy, setShowConfidenceWhy] = useState(false);
   const [showTransparencyHow, setShowTransparencyHow] = useState(false);
@@ -212,13 +219,27 @@ export const CitizenAIExperience: React.FC<CitizenAIExperienceProps> = ({
                 <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                   🎉 Complaint successfully submitted
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300/50">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  AI analysis completed
-                </span>
+                {processingStatus === 'failed' ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300/50">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    Manual Review Queued
+                  </span>
+                ) : modelUsed === 'gemini-3.5-flash-lite' ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-300/50 shadow-2xs">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 animate-pulse" />
+                    Gemini 3.5 Flash-Lite Analysis
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300/50">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    AI analysis completed
+                  </span>
+                )}
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl">
-                Your complaint has been successfully recorded and is now ready for government review.
+                {processingStatus === 'failed'
+                  ? 'Your complaint is saved and securely queued for government officer review.'
+                  : 'Your complaint has been successfully recorded and is now ready for government review.'}
               </p>
             </div>
           </div>
@@ -735,6 +756,138 @@ export const CitizenAIExperience: React.FC<CitizenAIExperienceProps> = ({
           </div>
         )}
       </div>
+
+      {/* ── 4B. Gemini 3.5 Flash-Lite Engineering Diagnostics (when available) ── */}
+      {geminiAnalysis && (
+        <div className="rounded-2xl border border-purple-200 dark:border-purple-900/60 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-purple-950/20 p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-100 dark:border-purple-900/40 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-xs">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                    Gemini 3.5 Flash-Lite Diagnostics
+                  </h3>
+                  <span className="text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-800 dark:text-purple-300">
+                    Live Model
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Multimodal civic engineering, root-cause assessment & feasibility scoring
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowGeminiInsights(!showGeminiInsights)}
+              className="text-xs font-semibold text-purple-700 dark:text-purple-300 hover:text-purple-900 flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+            >
+              <span>{showGeminiInsights ? 'Collapse Diagnostics' : 'Expand Diagnostics'}</span>
+              {showGeminiInsights ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showGeminiInsights && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="space-y-4 pt-1"
+              >
+                {/* Feasibility & Confidence Metrics */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-900/50 shadow-2xs">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Feasibility Score</span>
+                    <span className="text-lg font-black text-purple-700 dark:text-purple-400 font-mono">
+                      {geminiAnalysis.feasibilityScore}/100
+                    </span>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Technical viability</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-900/50 shadow-2xs">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Severity / Urgency</span>
+                    <span className="text-sm font-bold text-rose-600 dark:text-rose-400 uppercase">
+                      {geminiAnalysis.severity} · {geminiAnalysis.urgency}
+                    </span>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Assessed community impact</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-900/50 shadow-2xs">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">AI Confidence</span>
+                    <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                      {geminiAnalysis.aiConfidence}%
+                    </span>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Pattern certainty</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-900/50 shadow-2xs">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Technical Domains</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {geminiAnalysis.technicalDomains.slice(0, 2).map((td, i) => (
+                        <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-medium border border-purple-200/50 truncate max-w-full">
+                          {td}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommended Engineering Approach */}
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-900/50 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-purple-900 dark:text-purple-200">
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Recommended Engineering & Redressal Approach</span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {geminiAnalysis.recommendedApproach}
+                  </p>
+                </div>
+
+                {/* Potential Causes and Risks */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  {geminiAnalysis.potentialCauses?.length > 0 && (
+                    <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 space-y-2">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Wrench className="w-3.5 h-3.5 text-indigo-500" />
+                        <span>Potential Root Causes</span>
+                      </span>
+                      <ul className="space-y-1">
+                        {geminiAnalysis.potentialCauses.map((cause, idx) => (
+                          <li key={idx} className="flex items-start gap-1.5 text-slate-600 dark:text-slate-300 text-[11px]">
+                            <span className="text-indigo-500 mt-0.5">•</span>
+                            <span>{cause}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {geminiAnalysis.potentialRisks?.length > 0 && (
+                    <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 space-y-2">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Identified Community Risks</span>
+                      </span>
+                      <ul className="space-y-1">
+                        {geminiAnalysis.potentialRisks.map((risk, idx) => (
+                          <li key={idx} className="flex items-start gap-1.5 text-slate-600 dark:text-slate-300 text-[11px]">
+                            <span className="text-rose-500 mt-0.5">•</span>
+                            <span>{risk}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* ── 5. "Why this priority?" Interaction ─────────────────────────────── */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm space-y-3">

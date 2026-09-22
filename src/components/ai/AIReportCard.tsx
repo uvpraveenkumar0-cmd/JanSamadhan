@@ -387,6 +387,118 @@ export const AIReportCard: React.FC<AIReportCardProps> = ({
         </div>
       )}
 
+      {/* ── Gemini 3.5 Flash-Lite Engineering Diagnostics ────────────────── */}
+      {report.geminiAnalysis && (
+        <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-100">
+                Gemini 3.5 Flash-Lite Engineering Insights
+              </h4>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+              <Sparkles className="w-3 h-3 text-indigo-500 animate-pulse" />
+              gemini-3.5-flash-lite · {report.geminiAnalysis.aiConfidence}% AI Confidence
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">
+                Problem Typology
+              </span>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                {report.geminiAnalysis.problemType}
+              </p>
+            </div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">
+                Prototype Feasibility
+              </span>
+              <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                {report.geminiAnalysis.feasibilityScore}/100 · Complexity: {report.geminiAnalysis.estimatedComplexity}
+              </p>
+            </div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-slate-400 block mb-1">
+                Civic Urgency
+              </span>
+              <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                {report.geminiAnalysis.urgency} · Impact: {report.geminiAnalysis.impactLevel}/100
+              </p>
+            </div>
+          </div>
+
+          {report.geminiAnalysis.potentialCauses?.length > 0 && (
+            <div>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1.5">
+                Potential Root Causes (AI Inferred)
+              </span>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {report.geminiAnalysis.potentialCauses.map((cause, i) => (
+                  <li key={i} className="text-xs text-slate-600 dark:text-slate-400 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 flex items-start gap-2">
+                    <span className="text-indigo-500 font-bold">•</span>
+                    <span>{cause}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {report.geminiAnalysis.potentialRisks?.length > 0 && (
+            <div>
+              <span className="text-xs font-semibold text-rose-700 dark:text-rose-400 block mb-1.5 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                Escalation Risks If Unaddressed
+              </span>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {report.geminiAnalysis.potentialRisks.map((risk, i) => (
+                  <li key={i} className="text-xs text-slate-600 dark:text-slate-400 p-2 rounded-lg bg-rose-50/40 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 flex items-start gap-2">
+                    <span className="text-rose-500 font-bold">•</span>
+                    <span>{risk}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {report.geminiAnalysis.recommendedApproach?.length > 0 && (
+            <div>
+              <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block mb-1.5 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                Recommended Engineering / Prototyping Roadmap
+              </span>
+              <ol className="space-y-1.5">
+                {report.geminiAnalysis.recommendedApproach.map((step, i) => (
+                  <li key={i} className="text-xs text-slate-700 dark:text-slate-300 p-2.5 rounded-lg bg-emerald-50/30 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300 font-bold text-2xs flex items-center justify-center shrink-0">
+                      {i + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {report.geminiAnalysis.recommendedDepartments?.length > 0 && (
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">
+                Recommended Departmental Oversight
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {report.geminiAnalysis.recommendedDepartments.map((dept, i) => (
+                  <span key={i} className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-2xs font-medium">
+                    {dept}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Completeness Breakdown ─────────────────────────────────────────── */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">

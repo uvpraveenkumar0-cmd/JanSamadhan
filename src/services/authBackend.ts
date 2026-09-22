@@ -439,7 +439,7 @@ export const authBackend = {
 
     return {
       success: true,
-      message: 'Your Government Officer account has been created successfully. Please log in using your registered credentials.',
+      message: 'Your Government Portal account has been created successfully. You can now sign in using your registered credentials.',
       createdUser: { id: user.id, email: user.email, role: 'government', name: user.name },
       status: 'active',
     };
@@ -533,7 +533,7 @@ export const authBackend = {
 
     return {
       success: true,
-      message: 'Your University Admin account has been created successfully. Please log in using your registered credentials.',
+      message: 'Your University Portal account has been created successfully. You can now sign in using your registered credentials.',
       createdUser: { id: user.id, email: user.email, role: 'university', name: user.name },
       status: 'active',
     };
@@ -617,7 +617,7 @@ export const authBackend = {
 
     return {
       success: true,
-      message: 'Your Faculty account has been created successfully. Please log in using your registered credentials.',
+      message: 'Your Faculty Portal account has been created successfully. You can now sign in using your registered credentials.',
       createdUser: { id: user.id, email: user.email, role: 'faculty', name: user.name },
       status: 'active',
     };
@@ -784,7 +784,7 @@ export const authBackend = {
 
     return {
       success: true,
-      message: 'Your Industry Partner account has been created successfully. Please log in using your registered credentials.',
+      message: 'Your Industry Portal account has been created successfully. You can now sign in using your registered credentials.',
       createdUser: { id: user.id, email: user.email, role: 'industry', name: user.name },
       status: 'active',
     };

@@ -34,7 +34,7 @@ export default function AuditLogs() {
     <PageTransition>
       <SectionHeader
         title="Audit Trail"
-        subtitle="Complete audit log for demo problem JH-2026-00125 — Smart Water Quality Monitoring"
+        subtitle="Complete audit log of citizen problem activities and verified administrative actions across Jharkhand"
       />
 
       <div className="max-w-3xl">

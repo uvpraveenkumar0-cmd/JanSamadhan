@@ -20,11 +20,8 @@ export default function CitizenProblems() {
 
   useEffect(() => {
     if (!user) return;
-    problemService.getAll().then(all => {
-      const myProbs = all.filter(
-        p => p.citizenId === user.id || p.citizenId === user.profileId || p.citizen_id === user.id || p.citizenName === user.name
-      );
-      setProblems(myProbs.length > 0 ? myProbs : all);
+    problemService.getByCitizen(user.profileId, user.id, user.name).then(myProbs => {
+      setProblems(myProbs);
       setLoading(false);
     });
   }, [user]);

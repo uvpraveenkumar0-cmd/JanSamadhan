@@ -25,6 +25,7 @@ import { useApp } from '../../context/AppContext';
 export default function FacultyResearch() {
   const { addToast } = useApp();
   const [entries, setEntries] = useState<ResearchEntry[]>([]);
+  const [availableProblems, setAvailableProblems] = useState<{ id: string; title: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProblemFilter, setSelectedProblemFilter] = useState<string>('all');
   const [selectedTraceProblemId, setSelectedTraceProblemId] = useState<string | null>(null);
@@ -44,6 +45,8 @@ export default function FacultyResearch() {
   const loadResearch = () => {
     const list = db.getResearchEntries();
     setEntries(list);
+    const probs = db.getProblems();
+    setAvailableProblems(probs.map(p => ({ id: p.problem_id || p.id, title: p.title })));
   };
 
   const handleCreate = (e: React.FormEvent) => {
@@ -118,10 +121,11 @@ export default function FacultyResearch() {
             className="px-3 py-2 bg-white border border-surface-200 rounded-xl text-sm text-surface-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="all">All Linked Problems</option>
-            <option value="P-1030">P-1030 (Agri Pest Detection)</option>
-            <option value="P-1029">P-1029 (College Transformer)</option>
-            <option value="P-1028">P-1028 (Drainage Telemetry)</option>
-            <option value="JH-2026-00125">JH-2026-00125 (Water Quality)</option>
+            {availableProblems.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.id} ({p.title.slice(0, 24)}...)
+              </option>
+            ))}
           </select>
         </div>
 
@@ -210,10 +214,11 @@ export default function FacultyResearch() {
                   onChange={e => setNewProblemId(e.target.value)}
                   className="w-full px-3 py-2 bg-white border border-surface-200 rounded-lg text-sm text-surface-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="P-1030">P-1030 — Delayed Detection of Pest Outbreaks</option>
-                  <option value="P-1029">P-1029 — Transformer issue in college</option>
-                  <option value="P-1028">P-1028 — Urban Stormwater Drainage Clogging</option>
-                  <option value="JH-2026-00125">JH-2026-00125 — Smart Drinking Water Monitoring</option>
+                  {availableProblems.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.id} — {p.title}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>

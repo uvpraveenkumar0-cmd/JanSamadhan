@@ -1,6 +1,7 @@
 // University service — AI matching engine, allocation, and acceptance workflow
 import type { University, UniversityMatch, Allocation, Problem, MatchingFactors, AllocationType } from '../types';
 import { db } from './db';
+import { geminiService } from './geminiService';
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -173,6 +174,26 @@ export const universityService = {
       m.rank = idx + 1;
       m.aiRecommendation = idx === 0;
     });
+
+    // Attempt Gemini 3.5 Flash-Lite institutional recommendations in background
+    try {
+      const geminiRecs = await geminiService.recommendUniversities(problem, universities);
+      if (geminiRecs && geminiRecs.length > 0) {
+        for (const rec of geminiRecs) {
+          const matchTarget = matches.find(
+            (m) =>
+              m.universityId === rec.universityId ||
+              m.university.name.toLowerCase().includes(rec.universityName.toLowerCase()) ||
+              rec.universityName.toLowerCase().includes(m.university.name.toLowerCase())
+          );
+          if (matchTarget) {
+            matchTarget.geminiRecommendation = rec;
+          }
+        }
+      }
+    } catch (err: any) {
+      console.warn('[UniversityService] Gemini university matching skipped or unavailable:', err?.message || err);
+    }
 
     // Log AI matching event
     db.logAction(

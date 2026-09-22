@@ -225,6 +225,8 @@ async function run() {
     assert(loginResult.success === true, `${roleTest.roleName}: Login succeeded with registered credentials`);
     assert(loginResult.user !== undefined, `${roleTest.roleName}: Login returned authenticated user`);
     assert(loginResult.token !== undefined, `${roleTest.roleName}: Login returned session token`);
+    assert(loginResult.status === 'active', `${roleTest.roleName}: User status is 'active' (NO pending verification)`);
+    assert(loginResult.requiresStatusGate !== true, `${roleTest.roleName}: Institutional verification gate is bypassed for demo (requiresStatusGate is false/undefined)`);
     assert(authBackend.getCurrentUser()?.email === roleTest.email, `${roleTest.roleName}: Active session saved in storage`);
 
     // STEP 5: Role-based Dashboard Redirection Check

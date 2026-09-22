@@ -20,7 +20,7 @@ export default function CitizenDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    problemService.getByCitizen(user.profileId).then(p => {
+    problemService.getByCitizen(user.profileId, user.id, user.name).then(p => {
       setProblems(p);
       setLoading(false);
     });
@@ -28,9 +28,9 @@ export default function CitizenDashboard() {
 
   const stats = [
     { label: 'Problems Submitted', value: problems.length, icon: <FileText size={18} />, color: 'blue' as const },
-    { label: 'Under Review',       value: problems.filter(p => ['submitted','ai_analysis','government_review'].includes(p.status)).length, icon: <Clock size={18} />, color: 'yellow' as const },
-    { label: 'In Progress',        value: problems.filter(p => ['allocated','in_progress','testing','pilot'].includes(p.status)).length, icon: <CheckCircle2 size={18} />, color: 'teal' as const },
-    { label: 'Deployed',           value: problems.filter(p => p.status === 'deployed').length, icon: <CheckCircle2 size={18} />, color: 'green' as const },
+    { label: 'Under Review',       value: problems.filter(p => ['submitted','ai_analysis','government_review'].includes(p.status.toLowerCase())).length, icon: <Clock size={18} />, color: 'yellow' as const },
+    { label: 'In Progress',        value: problems.filter(p => ['allocated','in_progress','testing','pilot','university assigned','university accepted','faculty assigned'].includes(p.status.toLowerCase())).length, icon: <CheckCircle2 size={18} />, color: 'teal' as const },
+    { label: 'Deployed / Resolved', value: problems.filter(p => ['deployed','resolved'].includes(p.status.toLowerCase())).length, icon: <CheckCircle2 size={18} />, color: 'green' as const },
   ];
 
   return (
@@ -58,23 +58,6 @@ export default function CitizenDashboard() {
         ))}
       </motion.div>
 
-      {/* Demo Problem Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-        className="mb-6 p-4 bg-gradient-to-r from-civic-50 to-primary-50 border border-civic-200 rounded-xl flex items-start gap-3"
-      >
-        <Droplets size={20} className="text-civic-600 mt-0.5 shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-surface-900">Demo: Smart Water Quality Monitoring</p>
-          <p className="text-xs text-surface-500 mt-0.5">
-            Problem <strong>JH-2026-00125</strong> — Follow the full demo journey across all roles to see how citizen problems become deployed solutions.
-          </p>
-        </div>
-        <Link to="/citizen/track">
-          <Button variant="outline" size="sm" icon={<ArrowRight size={14} />} iconPosition="right">Track</Button>
-        </Link>
-      </motion.div>
-
       {/* Recent Problems */}
       <Card padding="none">
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-surface-100">
@@ -98,14 +81,14 @@ export default function CitizenDashboard() {
           <motion.div variants={containerVariants()} initial="initial" animate="animate">
             {problems.slice(0, 5).map(p => (
               <motion.div key={p.id} variants={cardVariants}>
-                <Link to="/citizen/track" className="flex items-start gap-4 p-4 sm:p-5 border-b border-surface-50 last:border-0 hover:bg-surface-50/50 transition-colors">
+                <Link to={`/citizen/track?problemId=${p.id}`} className="flex items-start gap-4 p-4 sm:p-5 border-b border-surface-50 last:border-0 hover:bg-surface-50/50 transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <p className="text-sm font-semibold text-surface-900 truncate">{p.title}</p>
                       <StatusBadge status={p.status} label={STATUS_LABELS[p.status] ?? p.status} />
                     </div>
                     <p className="text-xs text-surface-500 mb-2">{p.id} · {p.district} · {formatDate(p.submittedAt)}</p>
-                    {p.status === 'in_progress' && (
+                    {['in_progress', 'faculty assigned', 'team accepted'].includes(p.status.toLowerCase()) && (
                       <ProgressBar value={52} size="sm" color="primary" className="max-w-48" />
                     )}
                   </div>

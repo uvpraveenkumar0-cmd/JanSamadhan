@@ -55,6 +55,7 @@ function NotificationDropdown({ onClose }: { onClose: () => void }) {
 }
 
 import { VerificationBadge } from '../auth/VerificationBadge';
+import { UserProfileDrawer } from './UserProfileDrawer';
 
 // ─── Top Navigation ───────────────────────────────────────────────────────────
 
@@ -70,8 +71,10 @@ const ROLE_LABELS: Record<string, string> = {
   university:         'University Admin',
   university_admin:   'University Admin',
   faculty:            'Faculty Mentor',
+  faculty_member:     'Faculty Mentor',
   student:            'Student',
   industry:           'Industry Partner',
+  industry_partner:   'Industry Partner',
   industry_admin:     'Industry Admin',
   industry_mentor:    'Industry Mentor',
   super_admin:        'Super Admin',
@@ -85,8 +88,10 @@ const ROLE_COLORS: Record<string, string> = {
   university:         'bg-civic-100 text-civic-700',
   university_admin:   'bg-sky-100 text-sky-800',
   faculty:            'bg-ai-100 text-ai-700',
+  faculty_member:     'bg-ai-100 text-ai-700',
   student:            'bg-warning-100 text-warning-700',
   industry:           'bg-surface-100 text-surface-700',
+  industry_partner:   'bg-amber-100 text-amber-800',
   industry_admin:     'bg-amber-100 text-amber-800',
   industry_mentor:    'bg-amber-100 text-amber-800',
   super_admin:        'bg-purple-100 text-purple-800',
@@ -96,6 +101,7 @@ export function TopNav({ sidebarWidth }: TopNavProps) {
   const { user, unreadCount } = useApp();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileDrawer, setShowProfileDrawer] = useState(false);
 
   if (!user) return null;
 
@@ -104,56 +110,68 @@ export function TopNav({ sidebarWidth }: TopNavProps) {
   const breadcrumb = segments.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' › ');
 
   return (
-    <header
-      className="fixed top-0 right-0 z-30 flex items-center justify-between bg-white/90 backdrop-blur-sm border-b border-surface-200 px-4 h-14"
-      style={{ left: sidebarWidth }}
-    >
-      {/* Breadcrumb */}
-      <div>
-        <p className="text-sm text-surface-500 hidden sm:block">{breadcrumb}</p>
-      </div>
+    <>
+      <header
+        className="fixed top-0 right-0 z-30 flex items-center justify-between bg-white/90 backdrop-blur-sm border-b border-surface-200 px-4 h-14"
+        style={{ left: sidebarWidth }}
+      >
+        {/* Breadcrumb */}
+        <div>
+          <p className="text-sm text-surface-500 hidden sm:block">{breadcrumb}</p>
+        </div>
 
-      {/* Right actions */}
-      <div className="flex items-center gap-2">
-        {/* Notifications */}
-        <div className="relative">
-          <button
-            onClick={() => setShowNotifications(v => !v)}
-            className="relative p-2 text-surface-500 hover:text-surface-800 hover:bg-surface-100 rounded-lg transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-danger-500 text-white text-2xs rounded-full flex items-center justify-center font-bold">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </button>
-          <AnimatePresence>
+        {/* Right actions */}
+        <div className="flex items-center gap-2">
+          {/* Notifications */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(v => !v)}
+              className="relative p-2 text-surface-500 hover:text-surface-800 hover:bg-surface-100 rounded-lg transition-colors cursor-pointer"
+              aria-label="Notifications"
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-danger-500 text-white text-2xs rounded-full flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            <AnimatePresence>
+              {showNotifications && (
+                <NotificationDropdown onClose={() => setShowNotifications(false)} />
+              )}
+            </AnimatePresence>
             {showNotifications && (
-              <NotificationDropdown onClose={() => setShowNotifications(false)} />
+              <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
             )}
-          </AnimatePresence>
-          {showNotifications && (
-            <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-          )}
-        </div>
+          </div>
 
-        {/* User pill */}
-        <div className="flex items-center gap-2 pl-2 border-l border-surface-200">
-          <VerificationBadge status={user.status} isVerified={user.isVerified} size="sm" />
-          <div className={cn('px-2 py-0.5 rounded-full text-2xs font-semibold hidden sm:block', ROLE_COLORS[user.role] || 'bg-slate-100 text-slate-700')}>
-            {ROLE_LABELS[user.role] || user.role}
-          </div>
-          <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold">
-            {user.name.charAt(0)}
-          </div>
-          <div className="hidden sm:block text-right">
-            <p className="text-xs font-semibold text-surface-900 leading-tight">{user.name}</p>
-            <p className="text-2xs text-surface-400">{user.email}</p>
-          </div>
+          {/* User pill / Profile Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setShowProfileDrawer(true)}
+            className="flex items-center gap-2.5 pl-3 py-1 pr-2 border-l border-surface-200 hover:bg-surface-50 dark:hover:bg-slate-800/60 rounded-xl transition-all duration-150 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/20 active:scale-[0.99] group"
+            aria-label="Open User Profile"
+            aria-haspopup="dialog"
+            aria-expanded={showProfileDrawer}
+          >
+            <VerificationBadge status={user.status} isVerified={user.isVerified} size="sm" />
+            <div className={cn('px-2 py-0.5 rounded-full text-2xs font-semibold hidden sm:block', ROLE_COLORS[user.role] || 'bg-slate-100 text-slate-700')}>
+              {ROLE_LABELS[user.role] || user.role}
+            </div>
+            <div className="w-8 h-8 rounded-full bg-primary-600 group-hover:bg-primary-700 flex items-center justify-center text-white text-xs font-bold shadow-sm transition-colors">
+              {user.name.charAt(0)}
+            </div>
+            <div className="hidden sm:block text-right">
+              <p className="text-xs font-semibold text-surface-900 group-hover:text-primary-700 dark:text-white leading-tight transition-colors">{user.name}</p>
+              <p className="text-2xs text-surface-400">{user.email}</p>
+            </div>
+          </button>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Universal Right-Side Profile Drawer */}
+      <UserProfileDrawer open={showProfileDrawer} onClose={() => setShowProfileDrawer(false)} />
+    </>
   );
 }

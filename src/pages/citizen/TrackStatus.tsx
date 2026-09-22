@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2,
   Clock,
@@ -18,12 +18,17 @@ import {
   GraduationCap,
   Check,
   Award,
+  ChevronDown,
 } from 'lucide-react';
 import { PageTransition } from '../../components/ui/PageTransition';
 import { Card, SectionHeader, EmptyState } from '../../components/ui/Card';
 import { Badge, StatusBadge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
 import { problemService } from '../../services/problemService';
 import { db } from '../../services/db';
+import { aiReportStorage } from '../../services/aiReportStorage';
+import { AIReportCard } from '../../components/ai/AIReportCard';
+import type { AIReport } from '../../types/aiReportTypes';
 import { useApp } from '../../context/AppContext';
 import { formatDate, formatDateTime, STATUS_LABELS } from '../../lib/utils';
 import { cn } from '../../lib/utils';
@@ -34,34 +39,51 @@ export default function TrackStatus() {
   const { problemId: pathId } = useParams<{ problemId?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useApp();
 
-  const currentProblemId = pathId || searchParams.get('problemId') || 'P-1028';
+  const requestedProblemId = pathId || searchParams.get('problemId') || '';
 
   const [problem, setProblem] = useState<Problem | null>(null);
   const [assignment, setAssignment] = useState<ProjectAssignment | null>(null);
-  const [allProblems, setAllProblems] = useState<Problem[]>([]);
+  const [citizenProblems, setCitizenProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTraceModal, setShowTraceModal] = useState(false);
+  const [aiReport, setAiReport] = useState<AIReport | null>(null);
+  const [showAIInsights, setShowAIInsights] = useState(false);
 
   useEffect(() => {
-    // Load all citizen problems for selector
-    problemService.getAll().then((list) => {
-      setAllProblems(list);
-      const found =
-        list.find((p) => p.id === currentProblemId || p.problem_id === currentProblemId) ||
-        list.find((p) => p.problem_id === 'P-1028') ||
-        list[0] ||
-        null;
+    async function loadData() {
+      setLoading(true);
+      const myProbs = user
+        ? await problemService.getByCitizen(user.profileId, user.id, user.name)
+        : [];
+      setCitizenProblems(myProbs);
 
-      if (found) {
-        setProblem(found);
-        const pid = found.problem_id || found.id;
+      let target: Problem | null = null;
+      if (requestedProblemId) {
+        target =
+          myProbs.find((p) => p.id === requestedProblemId || p.problem_id === requestedProblemId) ||
+          (await problemService.getById(requestedProblemId));
+      } else if (myProbs.length > 0) {
+        target = myProbs[0];
+      }
+
+      setProblem(target);
+      if (target) {
+        const pid = target.problem_id || target.id;
         const asgn = db.getProjectAssignmentByProblemId(pid);
         setAssignment(asgn);
+        const report = aiReportStorage.getAIReport(pid) || aiReportStorage.getAIReport(target.id);
+        setAiReport(report);
+      } else {
+        setAssignment(null);
+        setAiReport(null);
       }
       setLoading(false);
-    });
-  }, [currentProblemId]);
+    }
+
+    loadData();
+  }, [requestedProblemId, user]);
 
   const handleSelectProblem = (id: string) => {
     setSearchParams({ problemId: id });
@@ -80,12 +102,29 @@ export default function TrackStatus() {
   }
 
   if (!problem) {
+    if (citizenProblems.length === 0) {
+      return (
+        <PageTransition>
+          <EmptyState
+            icon={<MapPin size={48} className="text-primary-500" />}
+            title="Select a problem to view its tracking status."
+            description="You haven't submitted any problems yet. Share a challenge your community faces to track its live lifecycle from submission to verified on-ground redressal."
+            action={
+              <Link to="/citizen/problems/new">
+                <Button variant="primary">Submit Your First Problem</Button>
+              </Link>
+            }
+          />
+        </PageTransition>
+      );
+    }
+
     return (
       <PageTransition>
         <EmptyState
           icon={<AlertTriangle size={48} className="text-warning-500" />}
           title="Problem Not Found"
-          description={`Could not find any registered problem with ID "${currentProblemId}".`}
+          description={`Could not find any registered problem with ID "${requestedProblemId}".`}
           action={
             <button className="btn-primary" onClick={() => navigate('/citizen/problems')}>
               Back to My Problems
@@ -165,7 +204,7 @@ export default function TrackStatus() {
       label: 'University Assigned',
       description:
         isAllocated || isUnivAccepted
-          ? `Officially allocated to ${problem.assigned_university_name || 'BIT Sindri'} by Government.`
+          ? `Officially allocated to ${problem.assigned_university_name || 'Designated Institution'} by Government.`
           : isDeclined
           ? 'Declined by institution. Re-queued for matching.'
           : 'Government officer evaluating AI recommendations.',
@@ -352,7 +391,7 @@ export default function TrackStatus() {
         />
 
         {/* Problem Switcher */}
-        {allProblems.length > 1 && (
+        {citizenProblems.length > 1 && problem && (
           <div className="flex items-center gap-2 bg-white px-3 py-1.5 border border-surface-200 rounded-xl shadow-xs">
             <span className="text-xs text-surface-500 font-medium">Switch Problem:</span>
             <select
@@ -360,7 +399,7 @@ export default function TrackStatus() {
               value={problem.id}
               onChange={(e) => handleSelectProblem(e.target.value)}
             >
-              {allProblems.map((p) => (
+              {citizenProblems.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.problem_id || p.id} — {p.title.slice(0, 32)}...
                 </option>
@@ -389,13 +428,13 @@ export default function TrackStatus() {
                 </span>
               </h4>
               <p className="text-xs text-emerald-100 mt-0.5">
-                BIT Sindri, Dr. Anita Sharma, and Team Innovators-07 have all accepted custody. Prototype development is currently underway.
+                {problem.assigned_university_name || 'Designated Institution'}, {problem.assigned_faculty_name || assignment?.faculty_name || 'Faculty Mentor'}, and {problem.assigned_team_name || assignment?.team_name || 'Student Team'} have all accepted custody. Prototype development is currently underway.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold bg-white/20 px-3 py-1.5 rounded-lg backdrop-blur-xs">
             <Check size={14} className="text-emerald-200" />
-            Milestone 1 in Progress
+            R&D in Progress
           </div>
         </motion.div>
       )}
@@ -429,7 +468,7 @@ export default function TrackStatus() {
               <span>·</span>
               <span className="flex items-center gap-1">
                 <Users size={13} className="text-surface-400" />{' '}
-                {problem.affectedPopulation?.toLocaleString() || 1200} citizens affected
+                {problem.affectedPopulation?.toLocaleString() || '100+'} citizens affected
               </span>
               <span>·</span>
               <span className="flex items-center gap-1">
@@ -458,6 +497,56 @@ export default function TrackStatus() {
           </div>
         </div>
       </Card>
+
+      {/* Gemini AI Insights Expandable Card */}
+      {aiReport && (
+        <div className="mb-6">
+          <div className="p-4 rounded-xl bg-gradient-to-r from-purple-50/90 via-indigo-50/50 to-white dark:from-slate-900 dark:via-purple-950/20 dark:to-slate-900 border border-purple-200 dark:border-purple-800 shadow-card-sm flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Gemini AI Problem Analysis & Diagnostics
+                  </h4>
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 font-semibold border border-purple-200 dark:border-purple-800">
+                    {aiReport.modelUsed || 'gemini-3.5-flash-lite'}
+                  </span>
+                  <span className="text-2xs text-surface-500 font-medium">
+                    Priority: <strong>{aiReport.priority.level}</strong> · Confidence: <strong>{aiReport.verification.confidence}%</strong>
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-1 max-w-2xl">
+                  {aiReport.summary}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowAIInsights(!showAIInsights)}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-slate-700 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>{showAIInsights ? 'Hide AI Details' : 'Inspect AI Report'}</span>
+              <ChevronDown size={14} className={cn('transition-transform duration-200', showAIInsights && 'rotate-180')} />
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {showAIInsights && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mt-3"
+              >
+                <AIReportCard report={aiReport} mode="full" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Timeline Column (2 cols) */}
@@ -607,7 +696,7 @@ export default function TrackStatus() {
                         {problem.assigned_faculty_name || assignment?.faculty_name}
                       </h5>
                       <p className="text-xs text-indigo-700">
-                        {assignment?.faculty_department || problem.assigned_faculty_dept || 'Civil & Water Resources'}
+                        {assignment?.faculty_department || problem.assigned_faculty_dept || 'Department Mentor'}
                       </p>
                     </div>
                   </div>
@@ -636,7 +725,7 @@ export default function TrackStatus() {
                   <div className="flex justify-between py-1 border-b border-surface-100">
                     <span className="text-surface-400">Specialization:</span>
                     <span className="font-semibold text-surface-800">
-                      {assignment?.faculty_expertise?.slice(0, 2).join(', ') || 'Water Infrastructure & IoT'}
+                      {assignment?.faculty_expertise?.slice(0, 2).join(', ') || 'Specialized Technical Mentor'}
                     </span>
                   </div>
                 </div>
@@ -678,7 +767,7 @@ export default function TrackStatus() {
                         {problem.assigned_team_name || assignment?.team_name}
                       </h5>
                       <p className="text-xs text-teal-700">
-                        Lead: {assignment?.team_leader_name || 'Arjun Singh'} · 4 Squad Members
+                        Lead: {assignment?.team_leader_name || 'Squad Lead'} · Squad Members
                       </p>
                     </div>
                   </div>
@@ -707,7 +796,7 @@ export default function TrackStatus() {
                   <div className="flex justify-between py-1 border-b border-surface-100">
                     <span className="text-surface-400">Squad Focus:</span>
                     <span className="font-semibold text-surface-800">
-                      {assignment?.team_skills?.slice(0, 2).join(', ') || 'IoT, Embedded C, Sensors'}
+                      {assignment?.team_skills?.slice(0, 2).join(', ') || 'Prototyping & Technical Engineering'}
                     </span>
                   </div>
                 </div>

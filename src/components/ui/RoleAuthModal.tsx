@@ -536,7 +536,7 @@ export function RoleAuthModal({ initialRole, initialMode = 'login', onClose, onM
       addToast({
         type: 'success',
         title: 'Account Created Successfully',
-        message: 'Please log in using your registered credentials.',
+        message: 'You can now sign in using your registered credentials.',
       });
     } else {
       setAuthError(res.message || 'Registration failed');
@@ -672,7 +672,7 @@ export function RoleAuthModal({ initialRole, initialMode = 'login', onClose, onM
                     Your {regSuccess.roleLabel} account has been created successfully.
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
-                    Please log in using your registered email and password to access your dashboard.
+                    You can now sign in using your registered credentials.
                   </p>
                 </div>
                 <div className="pt-3 max-w-sm mx-auto">
@@ -1558,7 +1558,7 @@ export function RoleAuthModal({ initialRole, initialMode = 'login', onClose, onM
                               ? 'Student Enrollment ID Card / Fee Receipt'
                               : 'Certificate of Incorporation / MCA Registration'
                           }
-                          description="Attach a clear PDF, JPG or PNG scan (max 5 MB) for institutional verification."
+                          description="Attach a clear PDF, JPG or PNG scan (max 5 MB) for institutional record."
                           onFileSelect={(fileName) => setRegData({ ...regData, docName: fileName })}
                           required
                         />
@@ -1578,9 +1578,9 @@ export function RoleAuthModal({ initialRole, initialMode = 'login', onClose, onM
                             style={{ background: `linear-gradient(135deg, ${role.ringColor}e0, ${role.ringColor})` }}
                           >
                             {submitting ? (
-                              <><Loader2 size={15} className="animate-spin" /> Submitting…</>
+                              <><Loader2 size={15} className="animate-spin" /> Registering…</>
                             ) : (
-                              <><ShieldCheck size={15} /> Submit for Verification</>
+                              <><CheckCircle2 size={15} /> Complete Registration</>
                             )}
                           </button>
                         </div>
@@ -1614,9 +1614,9 @@ export function RoleAuthModal({ initialRole, initialMode = 'login', onClose, onM
                         style={{ background: `linear-gradient(135deg, ${role.ringColor}e0, ${role.ringColor})` }}
                       >
                         {submitting ? (
-                          <><Loader2 size={15} className="animate-spin" /> Submitting…</>
+                          <><Loader2 size={15} className="animate-spin" /> Registering…</>
                         ) : (
-                          <><ShieldCheck size={15} /> Submit for Council Verification</>
+                          <><CheckCircle2 size={15} /> Complete Registration</>
                         )}
                       </button>
                     </div>

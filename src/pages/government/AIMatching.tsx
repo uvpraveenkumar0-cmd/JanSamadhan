@@ -456,6 +456,37 @@ export default function AIMatching() {
                         </div>
                       )}
 
+                      {/* Gemini 3.5 Flash-Lite Strategic Fit Rationale */}
+                      {match.geminiRecommendation && (
+                        <div className="p-3 bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-xl mb-3 text-xs space-y-1.5 shadow-2xs">
+                          <div className="flex items-center gap-1.5 font-bold text-purple-950 dark:text-purple-200">
+                            <Sparkles size={13} className="text-purple-600 animate-pulse shrink-0" />
+                            <span>Gemini 3.5 Flash-Lite Institutional Rationale:</span>
+                            <span className="font-mono text-[10px] bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-full">
+                              Fit: {match.geminiRecommendation.matchScore}%
+                            </span>
+                          </div>
+                          <p className="text-purple-900 dark:text-purple-300 leading-relaxed font-medium">
+                            {match.geminiRecommendation.reason}
+                          </p>
+                          {match.geminiRecommendation.matchingDomains?.length > 0 && (
+                            <div className="flex items-center gap-1.5 pt-1 flex-wrap">
+                              <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">
+                                Key Departmental Alignments:
+                              </span>
+                              {match.geminiRecommendation.matchingDomains.map((dom, dIdx) => (
+                                <span
+                                  key={dIdx}
+                                  className="text-[10px] px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-purple-200 text-purple-800 dark:text-purple-300 font-medium"
+                                >
+                                  {dom}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Expand Factor Breakdown Button */}
                       <button
                         onClick={() => setExpanded(isExpanded ? null : match.universityId)}

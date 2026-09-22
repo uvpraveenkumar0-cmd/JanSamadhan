@@ -89,6 +89,44 @@ export interface AIDuplicateDetection {
   explanation: string;
 }
 
+// ─── Gemini 3.5 Flash-Lite Structured Types ──────────────────────────────────
+
+export interface GeminiProblemAnalysis {
+  summary: string;
+  problemType: string;
+  category: string;
+  severity: 'Low' | 'Medium' | 'High' | 'Critical';
+  urgency: 'Low' | 'Medium' | 'High' | 'Critical';
+  impactLevel: number; // 0-100
+  estimatedAffectedPopulation: number; // >= 0
+  affectedAreas: string[];
+  technicalDomains: string[];
+  recommendedDepartments: string[];
+  feasibilityScore: number; // 0-100
+  estimatedComplexity: 'Low' | 'Medium' | 'High';
+  potentialCauses: string[];
+  potentialRisks: string[];
+  recommendedApproach: string[];
+  requiresGovernmentVerification: boolean;
+  aiConfidence: number; // 0-100
+  reasoningSummary: string;
+}
+
+export interface GeminiDuplicateResult {
+  hasPotentialDuplicate: boolean;
+  similarityScore: number; // 0-100
+  possibleDuplicateProblemIds: string[];
+  reason: string;
+}
+
+export interface GeminiUniversityRecommendation {
+  universityId: string;
+  universityName: string;
+  matchScore: number; // 0-100
+  matchingDomains: string[];
+  reason: string;
+}
+
 // ─── Full AI Report ─────────────────────────────────────────────────────────
 
 export interface AIReport {
@@ -105,6 +143,11 @@ export interface AIReport {
   processingStatus: AIProcessingStatus;
   analyzedAt: string;
   disclaimer: string;
+
+  // Real Gemini-powered structured insights
+  geminiAnalysis?: GeminiProblemAnalysis;
+  geminiDuplicate?: GeminiDuplicateResult;
+  modelUsed?: string;
 }
 
 // ─── Zod Validation Schema ──────────────────────────────────────────────────
@@ -154,6 +197,46 @@ export const aiDuplicateDetectionSchema = z.object({
   explanation: z.string().min(1),
 });
 
+export const geminiProblemAnalysisSchema = z.object({
+  summary: z.string().min(1),
+  problemType: z.string().default('Civic Infrastructure Issue'),
+  category: z.string().min(1),
+  severity: z.enum(['Low', 'Medium', 'High', 'Critical']),
+  urgency: z.enum(['Low', 'Medium', 'High', 'Critical']),
+  impactLevel: z.number().min(0).max(100),
+  estimatedAffectedPopulation: z.number().min(0),
+  affectedAreas: z.array(z.string()).default([]),
+  technicalDomains: z.array(z.string()).min(1),
+  recommendedDepartments: z.array(z.string()).min(1),
+  feasibilityScore: z.number().min(0).max(100),
+  estimatedComplexity: z.enum(['Low', 'Medium', 'High']),
+  potentialCauses: z.array(z.string()).default([]),
+  potentialRisks: z.array(z.string()).default([]),
+  recommendedApproach: z.array(z.string()).default([]),
+  requiresGovernmentVerification: z.boolean().default(true),
+  aiConfidence: z.number().min(0).max(100),
+  reasoningSummary: z.string().min(1),
+});
+
+export const geminiDuplicateSchema = z.object({
+  hasPotentialDuplicate: z.boolean(),
+  similarityScore: z.number().min(0).max(100),
+  possibleDuplicateProblemIds: z.array(z.string()).default([]),
+  reason: z.string(),
+});
+
+export const geminiUniversityRecommendationSchema = z.object({
+  recommendations: z.array(
+    z.object({
+      universityId: z.string(),
+      universityName: z.string(),
+      matchScore: z.number().min(0).max(100),
+      matchingDomains: z.array(z.string()),
+      reason: z.string(),
+    })
+  ),
+});
+
 export const aiReportSchema = z.object({
   id: z.string().min(1),
   problemId: z.string().min(1),
@@ -168,4 +251,8 @@ export const aiReportSchema = z.object({
   processingStatus: z.enum(['pending', 'processing', 'completed', 'failed']),
   analyzedAt: z.string(),
   disclaimer: z.string(),
+  geminiAnalysis: geminiProblemAnalysisSchema.optional(),
+  geminiDuplicate: geminiDuplicateSchema.optional(),
+  modelUsed: z.string().optional(),
 });
+

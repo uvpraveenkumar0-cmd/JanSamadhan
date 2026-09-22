@@ -226,10 +226,15 @@ export const problemService = {
     return updated;
   },
 
-  async getByCitizen(citizenId: string): Promise<Problem[]> {
+  async getByCitizen(citizenId: string, alternateId?: string, citizenName?: string): Promise<Problem[]> {
     await delay(100);
     const all = db.getProblems();
-    return all.filter(p => p.citizenId === citizenId || p.citizen_id === citizenId);
+    return all.filter(p => {
+      const matchId = p.citizenId === citizenId || p.citizen_id === citizenId;
+      const matchAlt = alternateId && (p.citizenId === alternateId || p.citizen_id === alternateId);
+      const matchName = citizenName && (p.citizenName === citizenName || p.citizen_name === citizenName);
+      return Boolean(matchId || matchAlt || matchName);
+    });
   },
 
   async getVerificationQueue(): Promise<Problem[]> {

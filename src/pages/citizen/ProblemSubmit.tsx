@@ -290,10 +290,20 @@ export default function ProblemSubmit() {
             <motion.div key="step0" {...fadeVariants} initial="initial" animate="animate" exit="exit">
               <Card padding="lg">
                 <h2 className="text-base font-semibold text-surface-900 mb-5">Problem Details</h2>
-                <form onSubmit={onStep1} className="space-y-4">
+                <form onSubmit={onStep1} className="space-y-4" autoComplete="off">
                   <div>
                     <label className="label">Problem Title *</label>
-                    <input className={cn('input', e1.title && 'border-danger-400')} placeholder="Briefly describe the problem (min. 10 chars)" {...r1('title')} />
+                    <input
+                      type="text"
+                      className={cn('input', e1.title && 'border-danger-400')}
+                      placeholder="Briefly describe the problem (min. 10 chars)"
+                      {...r1('title')}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      data-lpignore="true"
+                    />
                     {e1.title && <p className="text-xs text-danger-600 mt-1">{e1.title.message}</p>}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -307,7 +317,19 @@ export default function ProblemSubmit() {
                     </div>
                     <div>
                       <label className="label">Subcategory *</label>
-                      <input className={cn('input', e1.subcategory && 'border-danger-400')} placeholder="e.g. Water Quality" {...r1('subcategory')} />
+                      <input
+                        type="text"
+                        className={cn('input', e1.subcategory && 'border-danger-400')}
+                        placeholder="e.g. Water Quality"
+                        {...r1('subcategory')}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        data-lpignore="true"
+                        data-form-type="other"
+                        aria-autocomplete="none"
+                      />
                       {e1.subcategory && <p className="text-xs text-danger-600 mt-1">{e1.subcategory.message}</p>}
                     </div>
                   </div>
@@ -329,7 +351,7 @@ export default function ProblemSubmit() {
             <motion.div key="step1" {...fadeVariants} initial="initial" animate="animate" exit="exit">
               <Card padding="lg">
                 <h2 className="text-base font-semibold text-surface-900 mb-5">Location</h2>
-                <form onSubmit={onStep2} className="space-y-4">
+                <form onSubmit={onStep2} className="space-y-4" autoComplete="off">
                   <div>
                     <label className="label">District *</label>
                     <select className={cn('input', e2.district && 'border-danger-400')} {...r2('district')}>
@@ -341,11 +363,33 @@ export default function ProblemSubmit() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="label">Block / Taluka</label>
-                      <input className="input" placeholder="e.g. Kanke" {...r2('block')} />
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="e.g. Kanke"
+                        {...r2('block')}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        data-lpignore="true"
+                      />
                     </div>
                     <div>
                       <label className="label">Village / Area</label>
-                      <input className="input" placeholder="e.g. Hesag Panchayat" {...r2('village')} />
+                      <input
+                        type="text"
+                        className="input"
+                        placeholder="e.g. Hesag Panchayat"
+                        {...r2('village')}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        data-lpignore="true"
+                        data-form-type="other"
+                        aria-autocomplete="none"
+                      />
                     </div>
                   </div>
                   <div className="p-3 bg-surface-50 rounded-lg text-xs text-surface-500">
@@ -365,10 +409,16 @@ export default function ProblemSubmit() {
             <motion.div key="step2" {...fadeVariants} initial="initial" animate="animate" exit="exit">
               <Card padding="lg">
                 <h2 className="text-base font-semibold text-surface-900 mb-5">Impact Assessment</h2>
-                <form onSubmit={onStep3} className="space-y-4">
+                <form onSubmit={onStep3} className="space-y-4" autoComplete="off">
                   <div>
                     <label className="label">Estimated Affected Population *</label>
-                    <input type="number" className={cn('input', e3.affectedPopulation && 'border-danger-400')} placeholder="e.g. 1247" {...r3('affectedPopulation', { valueAsNumber: true })} />
+                    <input
+                      type="number"
+                      className={cn('input', e3.affectedPopulation && 'border-danger-400')}
+                      placeholder="e.g. 1247"
+                      {...r3('affectedPopulation', { valueAsNumber: true })}
+                      autoComplete="off"
+                    />
                     {e3.affectedPopulation && <p className="text-xs text-danger-600 mt-1">{e3.affectedPopulation.message}</p>}
                   </div>
                   <div>

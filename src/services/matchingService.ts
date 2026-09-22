@@ -396,6 +396,19 @@ export const matchingService = {
 
     db.createProjectAssignment(assignment);
 
+    // Update Problem Record with single-source-of-truth assigned faculty & team
+    db.updateProblem(params.problemId, {
+      assigned_faculty: faculty.faculty_id,
+      assigned_faculty_name: faculty.name,
+      assigned_faculty_dept: faculty.department,
+      assigned_team: team.team_id,
+      assigned_team_name: team.team_name,
+      faculty_status: 'Pending',
+      team_status: 'Pending',
+      project_status: 'FACULTY_ASSIGNED',
+      status: 'Faculty Assigned',
+    });
+
     // Audit log
     db.logAction(
       'FACULTY_AND_TEAM_ASSIGNED',
@@ -467,6 +480,12 @@ export const matchingService = {
         project_status: updatedStatus,
       });
 
+      // Update problem record single source of truth
+      db.updateProblem(assignment.problem_id, {
+        faculty_status: 'Accepted',
+        status: willBeActive ? 'In Progress' : 'Faculty Accepted',
+      });
+
       // Update faculty current active projects count
       const faculty = db.getFacultyById(assignment.faculty_id);
       if (faculty) {
@@ -509,6 +528,11 @@ export const matchingService = {
         faculty_response_at: now,
         faculty_decline_reason: reason,
         project_status: 'FACULTY_DECLINED',
+      });
+
+      db.updateProblem(assignment.problem_id, {
+        faculty_status: 'Declined',
+        status: 'Faculty Declined',
       });
 
       db.logAction(
@@ -556,6 +580,12 @@ export const matchingService = {
         team_status: 'Accepted',
         team_response_at: now,
         project_status: updatedStatus,
+      });
+
+      // Update problem record single source of truth
+      db.updateProblem(assignment.problem_id, {
+        team_status: 'Accepted',
+        status: willBeActive ? 'In Progress' : 'Team Accepted',
       });
 
       // Update team current active projects count
@@ -610,6 +640,11 @@ export const matchingService = {
         project_status: 'TEAM_DECLINED',
       });
 
+      db.updateProblem(assignment.problem_id, {
+        team_status: 'Declined',
+        status: 'Team Declined',
+      });
+
       db.logAction(
         'TEAM_DECLINED',
         { id: assignment.team_id, email: 'team@student.ac', role: 'student', name: actorName },
@@ -636,6 +671,11 @@ export const matchingService = {
   },
 
   triggerProjectActivation(assignment: ProjectAssignment) {
+    db.updateProblem(assignment.problem_id, {
+      project_status: 'PROJECT_ACTIVE',
+      status: 'In Progress',
+    });
+
     db.logAction(
       'PROJECT_ACTIVATED',
       { id: 'system', email: 'system@jharkhand.gov', role: 'government', name: 'JanSamadhan Innovation Hub Engine' },
