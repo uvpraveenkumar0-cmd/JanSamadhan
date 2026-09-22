@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── JIH Theme Tokens (Aurora default — matches JS-injected values) ── */
+  :root {
+    --radius: 0.5rem;
+    /* Aurora defaults — overridden by [data-theme="..."] at runtime */
+    --bg-primary:   #0a0a0f;
+    --bg-surface:   rgba(20,20,28,0.6);
+    --bg-surface2:  rgba(30,30,42,0.9);
+    --border:       rgba(255,255,255,0.08);
+    --border-h:     rgba(255,255,255,0.18);
+    --radius-jih:   12px;
+    --radius-lg:    20px;
+    --blur:         12px;
+    --accent-1:     #5e6ad2;
+    --accent-2:     #5e6ad2;
+    --accent-glow:  rgba(94,106,210,0.22);
+    --text-1:       #f4f4f6;
+    --text-2:       #9a9aa5;
+    --text-m:       #6b6b75;
+    --shadow:       0 4px 24px rgba(0,0,0,0.45);
+    --shadow-lg:    0 8px 48px rgba(0,0,0,0.65);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Ensure html background matches theme immediately on load */
+    background-color: var(--bg-primary);
+  }
+
+  body {
+    @apply font-sans;
+    /* Use theme background — inner app pages that need light bg override via their own wrappers */
+    background-color: var(--bg-primary);
+    color: var(--text-1);
+    font-feature-settings: 'cv11', 'ss01';
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* App-shell pages (citizen/govt/university dashboards) restore the light surface */
+  body:has(.app-shell) {
+    @apply bg-surface-50 text-surface-900;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface-300 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-surface-400; }
+
+  /* Focus ring */
+  :focus-visible {
+    @apply outline-2 outline-primary-500 outline-offset-2;
+  }
+}
+
+@layer components {
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      theme('colors.surface.100') 25%,
+      theme('colors.surface.200') 50%,
+      theme('colors.surface.100') 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Card base */
+  .card {
+    @apply bg-white rounded-xl border border-surface-200 shadow-card;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+
+  /* Badge variants */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary  { @apply badge bg-primary-50 text-primary-700 border border-primary-200; }
+  .badge-success  { @apply badge bg-success-50 text-success-700 border border-success-100; }
+  .badge-warning  { @apply badge bg-warning-50 text-warning-700 border border-warning-100; }
+  .badge-danger   { @apply badge bg-danger-50  text-danger-700  border border-danger-100;  }
+  .badge-ai       { @apply badge bg-ai-50      text-ai-700      border border-ai-100      border-dashed; }
+  .badge-official { @apply badge bg-primary-600 text-white; }
+  .badge-civic    { @apply badge bg-civic-600  text-white; }
+  .badge-gray     { @apply badge bg-surface-100 text-surface-600 border border-surface-200; }
+
+  /* Button base */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium
+           transition-all duration-150 focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-primary-500 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
+           active:scale-[0.97];
+  }
+
+  .btn-sm   { @apply btn px-3 py-1.5 text-sm; }
+  .btn-md   { @apply btn px-4 py-2   text-sm; }
+  .btn-lg   { @apply btn px-5 py-2.5 text-base; }
+
+  .btn-primary   { @apply btn-md bg-primary-600 text-white hover:bg-primary-700 shadow-sm; }
+  .btn-secondary { @apply btn-md bg-surface-100 text-surface-700 hover:bg-surface-200 border border-surface-200; }
+  .btn-outline   { @apply btn-md border border-primary-300 text-primary-700 hover:bg-primary-50; }
+  .btn-ghost     { @apply btn-md text-surface-600 hover:bg-surface-100; }
+  .btn-danger    { @apply btn-md bg-danger-600 text-white hover:bg-danger-700; }
+  .btn-civic     { @apply btn-md bg-civic-600 text-white hover:bg-civic-700 shadow-sm; }
+
+  /* Input base */
+  .input {
+    @apply w-full rounded-lg border border-surface-300 bg-white px-3 py-2 text-sm
+           placeholder:text-surface-400 transition-colors duration-150
+           focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500
+           disabled:bg-surface-50 disabled:cursor-not-allowed;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-surface-700 mb-1.5;
+  }
+
+  /* Status dots */
+  .status-dot {
+    @apply inline-block w-2 h-2 rounded-full;
+  }
+
+  /* Page container */
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6;
+  }
+
+  /* Section header */
+  .section-header {
+    @apply flex items-center justify-between mb-6;
+  }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+           text-surface-600 hover:bg-surface-100 hover:text-surface-900
+           transition-colors duration-150 cursor-pointer;
+  }
+
+  .nav-item-active {
+    @apply nav-item bg-primary-50 text-primary-700 hover:bg-primary-50 hover:text-primary-700;
+  }
+
+  /* AI disclaimer */
+  .ai-disclaimer {
+    @apply flex items-start gap-2 p-3 bg-ai-50 border border-ai-200 rounded-lg text-xs text-ai-700;
+  }
+
+  /* Timeline */
+  .timeline-line {
+    @apply absolute left-4 top-8 bottom-0 w-0.5 bg-surface-200;
+  }
+
+  .timeline-line-active {
+    @apply absolute left-4 top-8 w-0.5 bg-primary-400 transition-all duration-500;
+  }
+}
+
+@layer utilities {
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  .text-balance { text-wrap: balance; }
+
+  /* Gradient mesh background */
+  .mesh-bg {
+    background-color: #0f172a;
+    background-image:
+      radial-gradient(at 40% 20%, hsla(215, 91%, 29%, 0.5) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(198, 89%, 27%, 0.4) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(215, 91%, 20%, 0.3) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(210, 100%, 15%, 0.3) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(215, 80%, 25%, 0.4) 0px, transparent 50%);
+  }
+
+  /* Grid pattern */
+  .grid-bg {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

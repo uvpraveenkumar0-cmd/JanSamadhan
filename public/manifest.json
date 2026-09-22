@@ -1,0 +1,20 @@
+{
+  "name": "Jharkhand Innovation Hub",
+  "short_name": "JIH",
+  "description": "Connecting citizens, universities, industry and government to solve real community challenges across Jharkhand.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#5e6ad2",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["government", "education", "social"],
+  "lang": "en-IN"
+}
